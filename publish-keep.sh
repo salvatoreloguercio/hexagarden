@@ -43,6 +43,26 @@ ok()   { printf '\033[32m%s\033[0m\n' "$*" >&2; }
 
 usage() { sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 
+# The tagging skill lives outside this repo, in ~/.claude/skills. A fresh
+# clone therefore looks complete and then quietly produces nonsense: headless
+# claude treats an unknown "/keep-tags" as ordinary prompt text and, because
+# the call forces a tags schema, fills it with words describing its own
+# confusion (keep-tags-unavailable, command-not-found). That lands in the
+# frontmatter and is easy to miss, so check up front instead.
+skill_installed() {
+  local n="${1#/}" f
+  for f in "$HOME/.claude/skills/$n/SKILL.md" "$REPO/.claude/skills/$n/SKILL.md"; do
+    if [ -f "$f" ]; then return 0; fi
+  done
+  # Synced and plugin skills nest under a generated bucket directory, so match
+  # the declared name rather than the path.
+  if grep -rqs --include='SKILL.md' "^name:[[:space:]]*${n}[[:space:]]*$" \
+       "$HOME/.claude/skills" "$HOME/.claude/plugins" 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
 # ------------------------------------------------------------- date helper
 # Defined up here, not down in the date section, because the week has to be
 # settled before resolve_label() hashes it.
@@ -102,6 +122,18 @@ done
 
 [ "$LABELONLY" -eq 1 ] || [ -n "$IMG" ] || die "no image given. see --help"
 [ "$LABELONLY" -eq 1 ] || [ -f "$IMG" ] || die "image not found: $IMG"
+
+# Only the LLM path needs the skill: --manual and --no-tags never call it, and
+# --label exits before tagging. Checked here so a missing skill costs nothing.
+if [ "$LABELONLY" -eq 0 ] && [ "$NOTAGS" -eq 0 ] && [ "$MANUAL" -eq 0 ]; then
+  skill_installed "$SKILL" || die "the $SKILL skill is not installed, so tagging
+       would return nonsense instead of failing. install it:
+
+         mkdir -p ~/.claude/skills/${SKILL#/}
+         cp SKILL.md ~/.claude/skills/${SKILL#/}/
+
+       or skip the LLM for this run:  --manual  (type them)  /  --no-tags"
+fi
 
 # The week is optional: a screenshot already carries its capture date in the
 # filename. Only consulted when no label was passed, so an explicit label
