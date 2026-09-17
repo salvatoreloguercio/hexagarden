@@ -92,10 +92,11 @@ pre.poetry {
 // =====================================================================
 
 // --- the banner ------------------------------------------------------
-// pageTitle is "" in quartz.config.ts, so `.page-title a` is an empty anchor
-// that still points at the root. Spanning the full width it becomes both the
-// site's identity and its only way home — the whole strip is the link, so no
-// separate affordance is needed and nothing has to be labelled.
+// pageTitle is "hexagarden" in quartz.config.ts. The anchor carries that text
+// and points at the root; text-indent below moves it off-screen so only the
+// crop shows. Spanning the full width it becomes both the site's identity and
+// its only way home — the whole strip is the link, so no separate affordance
+// is needed and nothing visible has to be labelled.
 //
 // `.page-title` normally sits inside `.left.sidebar`, so it is lifted out of
 // that column and pinned to the top of #quartz-root. The 100vw breakout
@@ -143,6 +144,16 @@ body[data-slug="index"] {
     display: block;
     width: 100%;
     height: var(--banner-h);
+
+    // pageTitle is "hexagarden", so the anchor carries real text for screen
+    // readers, the tab order and the document outline. Pushed off-screen by
+    // indent rather than display:none or a 0x0 box, both of which would take
+    // the text out of the accessibility tree along with it. The banner is the
+    // background-image below, so nothing visible changes.
+    text-indent: -200vw;
+    white-space: nowrap;
+    overflow: hidden;
+
     // Fragment pages get the 210px band (128KB). The index swaps in the whole
     // composition below. Both are graded crops of the high-res Chi-Rho scan.
     // Relative, not absolute: Quartz emits index.css at the site root next to

@@ -3,11 +3,11 @@ import * as Plugin from "./quartz/plugins"
 
 const config: QuartzConfig = {
   configuration: {
-    // Empty on purpose. The home link is an illuminated crop applied to
-    // `.page-title a` in quartz/styles/custom.scss — the anchor still renders
-    // and still points at the root, so the mark is the only way back and no
-    // name is ever stated.
-    pageTitle: "",
+    // Rendered into `.page-title a`, then pushed off-screen by text-indent
+    // in quartz/styles/custom.scss. The illuminated crop is the only visible
+    // home link, but the name still reaches screen readers, the tab order and
+    // the document title.
+    pageTitle: "hexagarden",
     enableSPA: true,
     enablePopovers: true,
     analytics: {
