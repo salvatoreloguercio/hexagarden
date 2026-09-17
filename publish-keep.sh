@@ -251,6 +251,7 @@ fi
 # ---------------------------------------------------------------- tags
 
 TAGS=""
+DOMAINS=""
 
 extract_tags() {
   command -v claude >/dev/null 2>&1 || die "claude not found on PATH. use --manual"
@@ -258,7 +259,9 @@ extract_tags() {
 
   local abs schema out
   abs="$(cd "$(dirname "$IMG")" && pwd)/$(basename "$IMG")"
-  schema='{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"}}},"required":["tags"]}'
+  # domains are accumulated open-endedly for now: no enum, because the point
+  # is to find out which coarse labels actually recur before fixing a set.
+  schema='{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"}},"domains":{"type":"array","items":{"type":"string"}}},"required":["tags","domains"]}'
 
   info "reading $(basename "$abs") with claude ($MODEL)…"
 
@@ -279,6 +282,12 @@ extract_tags() {
 
   TAGS="$(printf '%s' "$out" | jq -r '.structured_output.tags[]?' 2>/dev/null | tr '\n' ' ')"
   TAGS="${TAGS% }"
+
+  # Deliberately NOT merged into TAGS: tags are the graph's only edges and are
+  # kept sparse on purpose. Domains are coarse by design and would connect
+  # everything to everything. They ride along in the frontmatter instead.
+  DOMAINS="$(printf '%s' "$out" | jq -r '.structured_output.domains[]?' 2>/dev/null | tr '\n' ' ')"
+  DOMAINS="${DOMAINS% }"
 
   local cost
   cost="$(printf '%s' "$out" | jq -r '.total_cost_usd // empty' 2>/dev/null || true)"
@@ -302,6 +311,10 @@ else
 fi
 
 # --- review gate -------------------------------------------------------
+
+if [ -n "$DOMAINS" ]; then
+  printf '\n  \033[2mdomains:\033[0m %s\n' "$DOMAINS" >&2
+fi
 
 if [ -n "$TAGS" ]; then
   printf '\n  %s\n\n' "$TAGS" >&2
@@ -339,6 +352,16 @@ PUBLISHED="$(date +%Y-%m-%d)"
     for t in $TAGS; do
       t="$(printf '%s' "$t" | tr -d '"'"'"'[],')"
       [ -n "$t" ] && printf '  - %s\n' "$t"
+    done
+  fi
+  # Never rendered and never fed to the graph, like week:. Accumulating them
+  # now so a fixed vocabulary can be chosen later from what actually recurs:
+  #   grep -h -A20 '^domains:' content/*.md | grep '^  - ' | sort | uniq -c
+  if [ -n "$DOMAINS" ]; then
+    printf 'domains:\n'
+    for d in $DOMAINS; do
+      d="$(printf '%s' "$d" | tr -d '"'"'"'[],')"
+      [ -n "$d" ] && printf '  - %s\n' "$d"
     done
   fi
   printf 'draft: false\n'
