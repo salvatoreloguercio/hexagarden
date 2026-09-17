@@ -80,3 +80,235 @@ pre.poetry {
 .content-meta {
   font-family: biro_script_standardRgus, var(--bodyFont);
 }
+
+
+// =====================================================================
+//  anti-garden
+//  Append to quartz/styles/custom.scss. Requires:
+//    quartz/static/banner-band.webp  — 1448x210, every page
+//    quartz/static/banner-full.webp  — 1448x655, index only
+//  Both are graded crops of the high-res Chi-Rho scan. The banner spans the
+//  full width and is the site's only home link.
+// =====================================================================
+
+// --- the banner ------------------------------------------------------
+// pageTitle is "" in quartz.config.ts, so `.page-title a` is an empty anchor
+// that still points at the root. Spanning the full width it becomes both the
+// site's identity and its only way home — the whole strip is the link, so no
+// separate affordance is needed and nothing has to be labelled.
+//
+// `.page-title` normally sits inside `.left.sidebar`, so it is lifted out of
+// that column and pinned to the top of #quartz-root. The 100vw breakout
+// escapes whatever max-width the page container carries.
+
+// One variable drives both the banner height and the body offset, so the two
+// can never drift apart. The index shows the whole composition at its native
+// 1448:655 ratio (45.24vw == 655/1448); every other page gets a band.
+
+:root {
+  --banner-h: 180px;
+}
+
+@media (max-width: 800px) {
+  :root {
+    --banner-h: 104px;
+  }
+}
+
+// 45.24vw == 655/1448, so at full bleed the whole composition fits exactly and
+// `cover` crops nothing. The vh cap stops it eating a short window entirely.
+body[data-slug="index"] {
+  --banner-h: min(45.24vw, 74vh);
+
+  .page-title a {
+    background-image: url("static/banner-full.webp");
+  }
+}
+
+#quartz-root {
+  position: relative;
+}
+
+.page-title {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  margin: 0;
+  z-index: 2;
+  line-height: 0;
+
+  a {
+    display: block;
+    width: 100%;
+    height: var(--banner-h);
+    // Fragment pages get the 210px band (128KB). The index swaps in the whole
+    // composition below. Both are graded crops of the high-res Chi-Rho scan.
+    // Relative, not absolute: Quartz emits index.css at the site root next to
+    // static/, so this resolves whether the site is served at / or at /heap/.
+    // An absolute /static/... path breaks the moment you move to a subpath.
+    background-image: url("static/banner-band.webp");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-color: var(--light);
+    border-bottom: 1px solid var(--secondary);
+    opacity: 0.88;
+    transition: opacity 0.25s ease;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+#quartz-body {
+  padding-top: calc(var(--banner-h) + 28px);
+}
+
+// --- fragment titles -------------------------------------------------
+// The hex is the title. Monospace, gold, given room to be the loudest
+// thing on the page — because it says nothing.
+
+.article-title {
+  font-family: var(--codeFont);
+  font-weight: 400;
+  font-size: 2rem;
+  letter-spacing: 0.06em;
+  color: var(--secondary);
+  margin: 0 0 0.35rem;
+}
+
+// --- the descriptive line --------------------------------------------
+// Quartz's own meta line ("May 23, 2024, 1 min read") is replaced by a
+// .fragment-meta paragraph that publish-keep.sh writes into the body, so
+// the exact wording is controlled from the script rather than a component.
+
+.content-meta {
+  display: none;
+}
+
+p.fragment-meta {
+  font-family: var(--codeFont);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--gray);
+  margin: 0 0 1.6rem;
+}
+
+// --- fragments -------------------------------------------------------
+// The screenshot is the post. No frame, no caption, no rounded corners
+// pretending it's a card.
+
+.popover-hint,
+article {
+  img {
+    border-radius: 2px;
+    display: block;
+    margin: 0;
+    max-width: 100%;
+  }
+}
+
+// --- chrome out of the way, snapshot at full width -------------------
+// Quartz lays #quartz-body out as a flex row: left sidebar, center, right
+// sidebar. Both sidebars are lifted out of that row and parked as a small
+// control cluster in the top-right, so the content column gets the whole
+// width. Desktop only — Quartz already stacks these on narrow screens.
+
+@media (min-width: 801px) {
+  #quartz-body {
+    position: relative;
+    gap: 1.6rem;
+  }
+
+  .left.sidebar {
+    position: static;
+    flex: 0 0 auto;
+    width: auto;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.9rem;
+    order: 2;
+  }
+
+  .right.sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: auto;
+    min-width: 0;
+    flex: none;
+    gap: 0;
+    z-index: 3;
+  }
+
+  .center {
+    order: 1;
+    flex: 1 1 auto;
+    max-width: none;
+    min-width: 0;
+  }
+
+  // the snapshot is the page: let it fill the column
+  body[data-slug^="weekly/"] .center article img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+// --- the graph, minimized to a toggle --------------------------------
+// Quartz's Graph component already ships a full-page overlay driven by
+// svg#global-graph-icon. Hiding the inline preview and the heading leaves
+// just that control: the graph is one click from anywhere and costs no
+// space until asked for. No component changes needed.
+
+.graph {
+  > h3 {
+    display: none;
+  }
+
+  #graph-container {
+    display: none;
+  }
+
+  .graph-outer {
+    border: none;
+    padding: 0;
+    background: none;
+  }
+}
+
+#global-graph-icon {
+  cursor: pointer;
+  width: 21px;
+  height: 21px;
+  color: var(--gray);
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--secondary);
+  }
+}
+
+#global-graph-outer {
+  backdrop-filter: blur(2px);
+}
+
+// --- backlinks -------------------------------------------------------
+// "No backlinks found" announces absence. The graph already shows the
+// edges, so the panel earns nothing.
+
+.backlinks {
+  display: none;
+}
+
+// --- tags stay out of sight ------------------------------------------
+// Tags exist to make edges, not to be read. The graph uses them; the page
+// never shows them.
+
+.tags {
+  display: none;
+}

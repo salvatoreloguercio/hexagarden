@@ -10,13 +10,14 @@ export const sharedPageComponents: SharedLayout = {
     links: {
       GitHub: "https://github.com/salvatoreloguercio",
       Twitter: "https://twitter.com/loguerci",
+      Colophon: "./colophon",
     },
   }),
 }
 
 // components for pages that display a single page (e.g. a single note)
 export const defaultContentPageLayout: PageLayout = {
-  beforeBody: [Component.ArticleTitle(), Component.ContentMeta(), Component.TagList()],
+  beforeBody: [Component.ArticleTitle(), Component.ContentMeta()],
   left: [
     Component.PageTitle(),
     Component.MobileOnly(Component.Spacer()),

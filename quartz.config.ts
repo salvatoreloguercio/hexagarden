@@ -3,41 +3,53 @@ import * as Plugin from "./quartz/plugins"
 
 const config: QuartzConfig = {
   configuration: {
-    pageTitle: "🦖🦖🦖✨✨✨",
+    // Empty on purpose. The home link is an illuminated crop applied to
+    // `.page-title a` in quartz/styles/custom.scss — the anchor still renders
+    // and still points at the root, so the mark is the only way back and no
+    // name is ever stated.
+    pageTitle: "",
     enableSPA: true,
     enablePopovers: true,
     analytics: {
       provider: "plausible",
     },
+    // Was "quartz.jzhao.xyz" — the template default. That broke RSS, the
+    // sitemap and every Open Graph URL. Must include the subpath: this is a
+    // GitHub Pages *project* site, served from the hexagarden repo.
     baseUrl: "salvatoreloguercio.github.io/hexagarden",
     ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "created",
     theme: {
       typography: {
-        header: "Schibsted Grotesk",
-        body: "Source Sans Pro",
+        // Mono labels, serif content: the titles are machine artifacts,
+        // the fragments are not.
+        header: "IBM Plex Mono",
+        body: "EB Garamond",
         code: "IBM Plex Mono",
       },
       colors: {
+        // Light mode is kept sane but is not the intended way to read the
+        // site. Warm parchment rather than Quartz's cool default grays.
         lightMode: {
-          light: "#faf8f8",
-          lightgray: "#e5e5e5",
-          gray: "#b8b8b8",
-          darkgray: "#4e4e4e",
-          dark: "#2b2b2b",
-          secondary: "#284b63",
-          tertiary: "#84a59d",
-          highlight: "rgba(143, 159, 169, 0.15)",
+          light: "#f4efe4",
+          lightgray: "#e0d8c6",
+          gray: "#a89a82",
+          darkgray: "#463d2e",
+          dark: "#241f17",
+          secondary: "#8a5f18",
+          tertiary: "#8f3222",
+          highlight: "rgba(138, 95, 24, 0.10)",
         },
+        // Sampled from lindisfarne1.gif: ochre, gold, oxblood, no blue.
         darkMode: {
-          light: "#161618",
-          lightgray: "#393639",
-          gray: "#646464",
-          darkgray: "#d4d4d4",
-          dark: "#ebebec",
-          secondary: "#7b97aa",
-          tertiary: "#84a59d",
-          highlight: "rgba(143, 159, 169, 0.15)",
+          light: "#0e0d0b",
+          lightgray: "#2a2419",
+          gray: "#6d6355",
+          darkgray: "#d9d0be",
+          dark: "#efe7d5",
+          secondary: "#b5842c",
+          tertiary: "#8f3222",
+          highlight: "rgba(181, 132, 44, 0.10)",
         },
       },
     },
@@ -47,7 +59,7 @@ const config: QuartzConfig = {
       Plugin.FrontMatter(),
       Plugin.TableOfContents(),
       Plugin.CreatedModifiedDate({
-        priority: ["frontmatter", "filesystem"], // you can add 'git' here for last modified from Git but this makes the build slower
+        priority: ["frontmatter", "filesystem"],
       }),
       Plugin.SyntaxHighlighting(),
       Plugin.Poetry(),
