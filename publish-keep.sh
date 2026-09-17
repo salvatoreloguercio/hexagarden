@@ -2,13 +2,19 @@
 #
 # publish-keep.sh — publish one Keep screenshot to the weekly stream
 #
-#   ./publish-keep.sh <image> <week-label> [options]
+#   ./publish-keep.sh <image> [week-label] [options]
+#   ./publish-keep.sh ~/Downloads/Screenshot_20190524-200251.png
 #   ./publish-keep.sh ~/Downloads/shot.png 2025-W32
+#
+# The week label is optional. Left off, it is read from the capture date in
+# the image filename (Screenshot_20190524-... or 2019-05-24-...), and that
+# exact date becomes the fragment's date:. Pass a label explicitly and it
+# wins — but a week implies no particular day, so --date is required with it.
 #
 # Options
 #   --manual            skip LLM tagging, type tags by hand
 #   --dry-run           write the files, show them, don't commit or push
-#   --date YYYY-MM-DD   override the inferred date
+#   --date YYYY-MM-DD   set date: explicitly; required with a week label
 #   --no-tags           publish with no tags at all
 #   -h, --help          this message
 #
@@ -35,7 +41,38 @@ die()  { printf '\033[31merror:\033[0m %s\n' "$*" >&2; exit 1; }
 info() { printf '\033[2m%s\033[0m\n' "$*" >&2; }
 ok()   { printf '\033[32m%s\033[0m\n' "$*" >&2; }
 
-usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+usage() { sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
+
+# ------------------------------------------------------------- date helper
+# Defined up here, not down in the date section, because the week has to be
+# settled before resolve_label() hashes it.
+
+# Capture date out of the filename: "2019-05-24-..." first, else a bare
+# "20190524" run as Android writes it. Prints "<week> <date>". The date is
+# sanity-checked against a plausible range so a resolution like 20481080 or
+# a version string can't be read as a day.
+week_from_filename() {
+  local base ymd
+  base="$(basename "$1")"
+  ymd="$(printf '%s' "$base" | grep -oE '(19|20)[0-9]{2}-[0-9]{2}-[0-9]{2}' | head -1)"
+  if [ -z "$ymd" ]; then
+    ymd="$(printf '%s' "$base" | grep -oE '(19|20)[0-9]{6}' | head -1)"
+    [ -n "$ymd" ] && ymd="${ymd:0:4}-${ymd:4:2}-${ymd:6:2}"
+  fi
+  [ -n "$ymd" ] || return 1
+  python3 - "$ymd" <<'PY'
+import datetime, sys
+try:
+    d = datetime.date.fromisoformat(sys.argv[1])
+except ValueError:
+    sys.exit(1)
+if not (datetime.date(1990,1,1) <= d <= datetime.date.today()):
+    sys.exit(1)
+y, w, _ = d.isocalendar()
+print(f"{y}-W{w:02d} {d.isoformat()}")
+PY
+}
+
 
 # ---------------------------------------------------------------- args
 
@@ -64,8 +101,25 @@ while [ $# -gt 0 ]; do
 done
 
 [ "$LABELONLY" -eq 1 ] || [ -n "$IMG" ] || die "no image given. see --help"
-[ -n "$WEEK" ] || die "no week label given (e.g. 2025-W32). see --help"
 [ "$LABELONLY" -eq 1 ] || [ -f "$IMG" ] || die "image not found: $IMG"
+
+# The week is optional: a screenshot already carries its capture date in the
+# filename. Only consulted when no label was passed, so an explicit label
+# always wins. CAPTURE_DATE is set only on this path, and is what makes the
+# date: exact rather than the Monday of the week.
+CAPTURE_DATE=""
+if [ -z "$WEEK" ] && [ "$LABELONLY" -eq 0 ]; then
+  if derived="$(week_from_filename "$IMG")"; then
+    WEEK="${derived%% *}"
+    CAPTURE_DATE="${derived##* }"
+    info "week $WEEK read from filename (captured $CAPTURE_DATE)"
+  fi
+fi
+
+# A week alone no longer yields a date, so point at both flags: following
+# the old advice would just walk into the date check a few lines down.
+[ -n "$WEEK" ] || die "no date in filename; pass the week and date explicitly
+       (e.g. 2019-W21 --date 2019-05-24)"
 
 # normalise + validate the week label: YYYY-Www
 WEEK="$(printf '%s' "$WEEK" | tr '[:lower:]' '[:upper:]')"
@@ -137,39 +191,29 @@ MD_PATH="$DEST/${HEX}.md"
 
 # ---------------------------------------------------------------- date
 
-# ISO week -> the Monday of that week. Python's fromisocalendar is exact and
-# handles the 53-week years; BSD and GNU `date` disagree about %V/%U parsing,
-# so we do not go near them.
-iso_week_monday() {
-  local label="$1" y w
-  y="${label%-W*}"; w="${label#*W}"
-  python3 - "$y" "$w" <<'PY'
-import datetime, sys
-y, w = int(sys.argv[1]), int(sys.argv[2])
-try:
-    print(datetime.date.fromisocalendar(y, w, 1).isoformat())
-except ValueError as e:
-    sys.exit(f"bad ISO week: {e}")
-PY
-}
+# --label reports the hex and stops. It carries no image, so there is no
+# capture date to find and nothing below applies to it.
+if [ "$LABELONLY" -eq 1 ]; then
+  printf '%s\n' "$HEX"
+  exit 0
+fi
 
+# A week no longer implies a day: there is no Monday fallback. The date comes
+# from the filename, or from --date, or the run stops. Nothing is guessed.
 if [ -n "$DATE_OVERRIDE" ]; then
   case "$DATE_OVERRIDE" in
     [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]) DATE="$DATE_OVERRIDE" ;;
     *) die "--date must be YYYY-MM-DD (got: $DATE_OVERRIDE)" ;;
   esac
-elif command -v python3 >/dev/null 2>&1; then
-  DATE="$(iso_week_monday "$WEEK")" || die "could not resolve $WEEK to a date"
 else
-  die "python3 not found, so the week label can't be converted to a date.
-       pass it explicitly:  --date YYYY-MM-DD"
-fi
-
-# --label reports the hex and stops. Placed after the date resolution so a
-# week that doesn't exist is rejected rather than cheerfully hashed.
-if [ "$LABELONLY" -eq 1 ]; then
-  printf '%s\n' "$HEX"
-  exit 0
+  # Note this also fires when the filename HAS a date but a week label was
+  # passed too: an explicit label suppresses derivation, so nothing set
+  # CAPTURE_DATE. Dropping the label is usually what the user wants.
+  [ -n "$CAPTURE_DATE" ] || die "no date for $WEEK: a week does not imply a day.
+       pass one:          --date YYYY-MM-DD
+       or drop the week label and let the filename supply the capture date."
+  # Derived from the filename: the day it was actually captured.
+  DATE="$CAPTURE_DATE"
 fi
 
 # ---------------------------------------------------------------- tags
