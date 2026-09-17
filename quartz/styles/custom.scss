@@ -251,12 +251,13 @@ article {
     max-width: none;
     min-width: 0;
   }
+}
 
-  // the snapshot is the page: let it fill the column
-  body[data-slug^="weekly/"] .center article img {
-    width: 100%;
-    height: auto;
-  }
+// the snapshot is the page: let it fill the column
+// Not width-gated: a fragment is the page at every width, mobile included.
+article:has(p.fragment-meta) img {
+  width: 100%;
+  height: auto;
 }
 
 // --- the graph, minimized to a toggle --------------------------------
