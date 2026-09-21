@@ -10,7 +10,6 @@ export const sharedPageComponents: SharedLayout = {
     links: {
       GitHub: "https://github.com/salvatoreloguercio",
       Twitter: "https://twitter.com/loguerci",
-      Colophon: "./colophon",
     },
   }),
 }
@@ -24,6 +23,8 @@ export const defaultContentPageLayout: PageLayout = {
     Component.MobileOnly(Component.Spacer()),
     Component.Search(),
     Component.Darkmode(),
+  ],
+  right: [
     Component.DesktopOnly(Component.Graph({
       localGraph: {
         depth: 2,            // fragment -> its tags -> other fragments on those tags
@@ -46,8 +47,6 @@ export const defaultContentPageLayout: PageLayout = {
         showTags: true,
       },
     })),
-  ],
-  right: [
     Component.Backlinks(),
   ],
 }

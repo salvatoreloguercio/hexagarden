@@ -322,12 +322,13 @@ function renderGlobalGraph() {
 // listener on every SPA navigation.
 const MODE_KEY = "hexagarden-expanded"
 
+const GRAPH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M12 12 L5 5.5 M12 12 L19 7.5 M12 12 L8.5 19"/><circle cx="12" cy="12" r="2.7" fill="currentColor" stroke="none"/><circle cx="5" cy="5.5" r="2"/><circle cx="19" cy="7.5" r="2"/><circle cx="8.5" cy="19" r="2"/></svg>`
+
 function applyMode() {
   const on = localStorage.getItem(MODE_KEY) === "1"
   document.body.classList.toggle("expanded", on)
   const btn = document.querySelector<HTMLElement>(".mode-toggle")
   if (btn) {
-    btn.textContent = on ? "⊟" : "⊞"
     btn.setAttribute("aria-label", on ? "Hide the graph" : "Show the graph")
     btn.setAttribute("aria-expanded", String(on))
   }
@@ -347,6 +348,7 @@ function mountModeToggle() {
   const btn = document.createElement("button")
   btn.className = "mode-toggle"
   btn.type = "button"
+  btn.innerHTML = GRAPH_ICON
   btn.addEventListener("click", toggleMode)
   title.appendChild(btn)
 }
@@ -360,6 +362,13 @@ function expandFromInline(ev: Event) {
 document.addEventListener("nav", async (e: unknown) => {
   const slug = (e as CustomEventMap["nav"]).detail.url
   addToVisited(slug)
+
+  // Mode first, render second. renderGraph measures the container, and a
+  // container inside a hidden sidebar measures zero — laying the graph out
+  // before the mode is applied produces a speck in the corner.
+  mountModeToggle()
+  applyMode()
+
   await renderGraph("graph-container", slug)
 
   // the icon reverts to stock Quartz: it opens the fullscreen graph
@@ -370,7 +379,4 @@ document.addEventListener("nav", async (e: unknown) => {
   const inline = document.getElementById("graph-container")
   inline?.removeEventListener("click", expandFromInline)
   inline?.addEventListener("click", expandFromInline)
-
-  mountModeToggle()
-  applyMode()
 })

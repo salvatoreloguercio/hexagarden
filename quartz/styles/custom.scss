@@ -217,11 +217,28 @@ body:not(.expanded) {
   .page .page-header {
     width: 100%;
   }
+
+  // With the column running full width, a left-aligned hex is stranded against
+  // the margin. Centre it and the date line over the snapshot they belong to.
+  .article-title,
+  p.fragment-meta {
+    text-align: center;
+  }
+}
+
+// Quartz anchors the fixed sidebars $topSpacing (96px) from the top of the
+// viewport, which is inside the banner — it has been covering the search box
+// since the banner landed, and covers the graph now that the graph leads the
+// right column. Start the sidebars below the banner instead, the same
+// relationship #quartz-body already uses. Spacing only.
+@media all and (min-width: $fullPageWidth + 1px) {
+  body.expanded .page > #quartz-body .sidebar {
+    margin-top: calc(var(--banner-h) + 28px);
+  }
 }
 
 // Quartz hides .desktop-only below 1510px, which would mean no graph on a
-// laptop. This is the only rule Open mode adds, and it changes size and
-// visibility only.
+// laptop. This changes size and visibility only.
 body.expanded .graph.desktop-only {
   display: block;
 
@@ -237,14 +254,18 @@ body.expanded .graph.desktop-only {
   appearance: none;
   background: none;
   border: none;
-  padding: 0 0 0 0.6rem;
-  font-family: var(--codeFont);
-  font-size: 0.95rem;
-  line-height: 1;
-  color: var(--lightgray);
+  padding: 0 0 0 0.7rem;
+  line-height: 0;
+  color: var(--gray);
   cursor: pointer;
-  vertical-align: 0.12em;
+  vertical-align: -0.16em;   // sits the icon on the hex's baseline
   transition: color 0.2s ease;
+
+  svg {
+    display: block;
+    width: 1.95rem;          // box is larger than the mark; this matches the hex
+    height: 1.95rem;
+  }
 
   &:hover {
     color: var(--secondary);
@@ -291,6 +312,33 @@ article:has(p.fragment-meta) img {
 
 #global-graph-outer {
   backdrop-filter: blur(2px);
+}
+
+// --- the theme switch ------------------------------------------------
+// Quartz shows the icon for the theme you are in: moon on the dark page.
+// Show what the click does instead — sun on dark, moon on light. The `.darkmode`
+// class adds the specificity to outrank the component's own rule; the SVG
+// <title>s ("Light mode" / "Dark mode") already read as actions, so they now
+// match what is shown.
+
+:root[saved-theme="dark"] .darkmode .toggle ~ label {
+  > #dayIcon {
+    opacity: 1;
+  }
+
+  > #nightIcon {
+    opacity: 0;
+  }
+}
+
+:root[saved-theme="light"] .darkmode .toggle ~ label {
+  > #dayIcon {
+    opacity: 0;
+  }
+
+  > #nightIcon {
+    opacity: 1;
+  }
 }
 
 // --- backlinks -------------------------------------------------------

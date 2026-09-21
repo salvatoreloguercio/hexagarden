@@ -1,5 +1,6 @@
-const userPref = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
-const currentTheme = localStorage.getItem("theme") ?? userPref
+// hexagarden ships dark. The OS preference does not decide the first visit —
+// only an explicit choice on the toggle, which is remembered in localStorage.
+const currentTheme = localStorage.getItem("theme") ?? "dark"
 document.documentElement.setAttribute("saved-theme", currentTheme)
 
 document.addEventListener("nav", () => {
@@ -20,13 +21,4 @@ document.addEventListener("nav", () => {
   if (currentTheme === "dark") {
     toggleSwitch.checked = true
   }
-
-  // Listen for changes in prefers-color-scheme
-  const colorSchemeMediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-  colorSchemeMediaQuery.addEventListener("change", (e) => {
-    const newTheme = e.matches ? "dark" : "light"
-    document.documentElement.setAttribute("saved-theme", newTheme)
-    localStorage.setItem("theme", newTheme)
-    toggleSwitch.checked = e.matches
-  })
 })
