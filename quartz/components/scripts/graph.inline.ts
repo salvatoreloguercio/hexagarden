@@ -317,12 +317,60 @@ function renderGlobalGraph() {
   registerEscapeHandler(container, hideGlobalGraph)
 }
 
+// Module level, not inside the nav handler: these must be stable references
+// or removeEventListener won't match them, and they'd accumulate one more
+// listener on every SPA navigation.
+const MODE_KEY = "hexagarden-expanded"
+
+function applyMode() {
+  const on = localStorage.getItem(MODE_KEY) === "1"
+  document.body.classList.toggle("expanded", on)
+  const btn = document.querySelector<HTMLElement>(".mode-toggle")
+  if (btn) {
+    btn.textContent = on ? "⊟" : "⊞"
+    btn.setAttribute("aria-label", on ? "Hide the graph" : "Show the graph")
+    btn.setAttribute("aria-expanded", String(on))
+  }
+}
+
+function toggleMode() {
+  const on = localStorage.getItem(MODE_KEY) === "1"
+  localStorage.setItem(MODE_KEY, on ? "0" : "1")
+  applyMode()
+  // the graph was never laid out while hidden, so give d3 a real width
+  if (!on) renderGraph("graph-container", getFullSlug(window))
+}
+
+function mountModeToggle() {
+  const title = document.querySelector(".article-title")
+  if (!title || title.querySelector(".mode-toggle")) return
+  const btn = document.createElement("button")
+  btn.className = "mode-toggle"
+  btn.type = "button"
+  btn.addEventListener("click", toggleMode)
+  title.appendChild(btn)
+}
+
+function expandFromInline(ev: Event) {
+  const t = ev.target as Element
+  if (t.closest && t.closest("circle, text")) return   // node clicks navigate
+  renderGlobalGraph()
+}
+
 document.addEventListener("nav", async (e: unknown) => {
   const slug = (e as CustomEventMap["nav"]).detail.url
   addToVisited(slug)
   await renderGraph("graph-container", slug)
 
-  const containerIcon = document.getElementById("global-graph-icon")
-  containerIcon?.removeEventListener("click", renderGlobalGraph)
-  containerIcon?.addEventListener("click", renderGlobalGraph)
+  // the icon reverts to stock Quartz: it opens the fullscreen graph
+  const icon = document.getElementById("global-graph-icon")
+  icon?.removeEventListener("click", renderGlobalGraph)
+  icon?.addEventListener("click", renderGlobalGraph)
+
+  const inline = document.getElementById("graph-container")
+  inline?.removeEventListener("click", expandFromInline)
+  inline?.addEventListener("click", expandFromInline)
+
+  mountModeToggle()
+  applyMode()
 })
