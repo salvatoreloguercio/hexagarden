@@ -18,7 +18,7 @@ export const sharedPageComponents: SharedLayout = {
 export const defaultContentPageLayout: PageLayout = {
   // PageTitle is the full-bleed banner. It has to sit outside the sidebars,
   // which bare mode hides.
-  beforeBody: [Component.PageTitle(), Component.ArticleTitle(), Component.ContentMeta()],
+  beforeBody: [Component.PageTitle(), Component.BannerToggle(), Component.ArticleTitle(), Component.ContentMeta()],
   left: [
     Component.MobileOnly(Component.Spacer()),
     Component.Search(),
@@ -53,7 +53,7 @@ export const defaultContentPageLayout: PageLayout = {
 
 // components for pages that display lists of pages  (e.g. tags or folders)
 export const defaultListPageLayout: PageLayout = {
-  beforeBody: [Component.PageTitle(), Component.ArticleTitle()],
+  beforeBody: [Component.PageTitle(), Component.BannerToggle(), Component.ArticleTitle()],
   left: [
     Component.MobileOnly(Component.Spacer()),
     Component.Search(),

@@ -80,13 +80,24 @@ pre.poetry {
   }
 }
 
+// The index arrives as the same band every other page gets, so navigating home
+// from a fragment does not suddenly cost 650px. Clicking the banner opens the
+// whole composition; clicking again closes it. See bannertoggle.inline.ts.
+//
 // 45.24vw == 655/1448, so at full bleed the whole composition fits exactly and
 // `cover` crops nothing. The vh cap stops it eating a short window entirely.
-body[data-slug="index"] {
-  --banner-h: min(45.24vw, 74vh);
-
+// Set the height and the body offset directly rather than re-pointing
+// --banner-h on the body: the band height is inherited from :root by several
+// rules, and overriding it mid-cascade is the kind of thing that works in one
+// place and quietly does not in another.
+body[data-slug="index"].banner-open {
   .page-title a {
+    height: min(45.24vw, 74vh);
     background-image: url("static/banner-full.webp");
+  }
+
+  #quartz-body {
+    padding-top: calc(min(45.24vw, 74vh) + 28px);
   }
 }
 
@@ -130,7 +141,7 @@ body[data-slug="index"] {
     background-color: var(--light);
     border-bottom: 1px solid var(--secondary);
     opacity: 0.88;
-    transition: opacity 0.25s ease;
+    transition: opacity 0.25s ease, height 0.35s ease;
 
     &:hover {
       opacity: 1;
@@ -140,6 +151,7 @@ body[data-slug="index"] {
 
 #quartz-body {
   padding-top: calc(var(--banner-h) + 28px);
+  transition: padding-top 0.35s ease;
 }
 
 // --- fragment titles -------------------------------------------------
