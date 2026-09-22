@@ -4,15 +4,6 @@
 
 @use "./variables.scss" as *;
 
-body[data-slug="index"] img {
-  filter: invert(0%);
-  opacity: 0.85;
-}
-
-[saved-theme="dark"] body[data-slug="index"] img[src="./banner.svg"] {
-  filter: invert(100%);
-}
-
 hr {
   overflow: visible;
   padding: 0;
@@ -80,9 +71,9 @@ pre.poetry {
   }
 }
 
-// The index arrives as the same band every other page gets, so navigating home
-// from a fragment does not suddenly cost 650px. Clicking the banner opens the
-// whole composition; clicking again closes it. See bannertoggle.inline.ts.
+// About arrives as the same band every other page gets, so getting there from
+// a fragment does not suddenly cost 650px. Clicking the banner opens the whole
+// composition; clicking again closes it. See bannertoggle.inline.ts.
 //
 // 45.24vw == 655/1448, so at full bleed the whole composition fits exactly and
 // `cover` crops nothing. The vh cap stops it eating a short window entirely.
@@ -90,7 +81,7 @@ pre.poetry {
 // --banner-h on the body: the band height is inherited from :root by several
 // rules, and overriding it mid-cascade is the kind of thing that works in one
 // place and quietly does not in another.
-body[data-slug="index"].banner-open {
+body[data-slug="about"].banner-open {
   .page-title a {
     height: min(45.24vw, 74vh);
     background-image: url("static/banner-full.webp");
@@ -216,25 +207,30 @@ body:not(.expanded) {
     display: none;
   }
 
-  // base sizes the column with `width: $pageWidth`, so `max-width` alone never
-  // reaches it. `width: 100%` claims the row (`flex: 1` would too, and is
-  // deliberately not used).
-  .page .center {
-    width: 100%;
-    max-width: none;
-  }
+  // The full-width column is for the snapshot. About is prose, and prose needs
+  // a measure, so it keeps Quartz's own column and alignment.
+  &:not([data-slug="about"]) {
+    // base sizes the column with `width: $pageWidth`, so `max-width` alone
+    // never reaches it. `width: 100%` claims the row (`flex: 1` would too, and
+    // is deliberately not used).
+    .page .center {
+      width: 100%;
+      max-width: none;
+    }
 
-  // .page-header carries the hex and the toggle; base pins it to $pageWidth,
-  // so without this the title sits indented while the snapshot runs full width.
-  .page .page-header {
-    width: 100%;
-  }
+    // .page-header carries the hex and the toggle; base pins it to $pageWidth,
+    // so without this the title sits indented while the snapshot runs full
+    // width.
+    .page .page-header {
+      width: 100%;
+    }
 
-  // With the column running full width, a left-aligned hex is stranded against
-  // the margin. Centre it and the date line over the snapshot they belong to.
-  .article-title,
-  p.fragment-meta {
-    text-align: center;
+    // With the column running full width, a left-aligned hex is stranded
+    // against the margin. Centre it and the date line over the snapshot.
+    .article-title,
+    p.fragment-meta {
+      text-align: center;
+    }
   }
 }
 
@@ -351,6 +347,40 @@ article:has(p.fragment-meta) img {
 
   > #nightIcon {
     opacity: 1;
+  }
+}
+
+// --- the epigraphs ---------------------------------------------------
+// The two quotes that open About. They carry the argument, so they are set
+// larger than the prose and without the usual blockquote furniture; the
+// attribution is the last line inside each one.
+
+body[data-slug="about"] article {
+  blockquote {
+    border-left: none;
+    margin: 2.5rem 0;
+    padding: 0;
+    font-family: var(--codeFont);
+    font-size: 1.35rem;
+    line-height: 1.5;
+
+    // set on the paragraph, not the blockquote: base colours article text and
+    // the inherited value never reaches it
+    p {
+      color: var(--secondary);
+    }
+
+    p:last-child {
+      margin-top: 0.6rem;
+      font-family: var(--bodyFont);
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+  }
+
+  // the rule between the argument and the links below it
+  hr {
+    margin: 3.5em auto;
   }
 }
 

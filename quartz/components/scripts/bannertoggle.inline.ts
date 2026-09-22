@@ -1,8 +1,8 @@
-// On the index the banner is a control rather than a link: it opens to the
-// full Chi-Rho composition and closes back to the band. Everywhere else it
-// stays what it has always been, the only way home.
+// On the About page the banner is a control rather than a link: it opens to
+// the full Chi-Rho composition and closes back to the band. Everywhere else it
+// is the link that gets you to About.
 //
-// The open state is deliberately not remembered. Arriving at the index from a
+// The open state is deliberately not remembered. Arriving at About from a
 // fragment should show the same band the fragment had, so the banner grows
 // only when someone asks it to.
 
@@ -27,7 +27,7 @@ document.addEventListener("nav", () => {
   link.removeEventListener("click", toggleBanner)
   document.body.classList.remove("banner-open")
 
-  if (document.body.dataset.slug === "index") {
+  if (document.body.dataset.slug === "about") {
     link.addEventListener("click", toggleBanner)
     link.setAttribute("aria-expanded", "false")
     link.setAttribute("aria-label", "Expand the banner")

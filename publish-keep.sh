@@ -376,17 +376,38 @@ printf '\n\033[2m--- %s ---\033[0m\n' "$FRAGMENT_SUBDIR/${HEX}.md" >&2
 cat "$MD_PATH" >&2
 printf '\033[2m---\033[0m\n\n' >&2
 
+# ------------------------------------------------------- the landing page
+#
+# `/` is the newest fragment, so whoever lands on the site lands on the most
+# recent thing rather than on a welcome mat. It is a copy of the fragment just
+# written, minus the tags and domains: the permalink at /$HEX carries those,
+# and duplicating them would double every edge in the graph.
+#
+# The About page — quotes, and what this is — sits behind the banner instead.
+{
+  printf -- '---\n'
+  printf 'title: "%s"\n' "$HEX"
+  printf 'date: %s\n' "$DATE"
+  printf 'week: %s\n' "$WEEK"
+  printf 'published: %s\n' "$PUBLISHED"
+  printf 'draft: false\n'
+  printf -- '---\n\n'
+  printf '<p class="fragment-meta">published %s</p>\n\n' "$PUBLISHED"
+  printf '![[%s]]\n' "$IMG_NAME"
+} > "$REPO/content/index.md"
+
 # ---------------------------------------------------------------- commit
 
 if [ "$DRYRUN" -eq 1 ]; then
   ok "dry run — files written, nothing committed."
   info "  $MD_PATH"
   info "  $DEST/$IMG_NAME"
+  info "  $REPO/content/index.md"
   exit 0
 fi
 
 cd "$REPO"
-git add "$FRAGMENT_SUBDIR"
+git add "$FRAGMENT_SUBDIR" content/index.md
 if git diff --cached --quiet; then
   info "nothing to commit."
   exit 0
