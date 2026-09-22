@@ -379,4 +379,11 @@ document.addEventListener("nav", async (e: unknown) => {
   const inline = document.getElementById("graph-container")
   inline?.removeEventListener("click", expandFromInline)
   inline?.addEventListener("click", expandFromInline)
+
+  // The screenshot is the page, so it is also the control: clicking it does
+  // what the glyph beside the hex does. No anchor is involved, so the router
+  // ignores the click and nothing needs stopping.
+  const shot = document.querySelector<HTMLElement>("article:has(p.fragment-meta) img")
+  shot?.removeEventListener("click", toggleMode)
+  shot?.addEventListener("click", toggleMode)
 })

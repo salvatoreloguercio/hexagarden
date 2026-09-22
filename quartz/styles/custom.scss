@@ -293,6 +293,7 @@ body.expanded .graph.desktop-only {
 article:has(p.fragment-meta) img {
   width: 100%;
   height: auto;
+  cursor: pointer;           // the snapshot toggles the layout, like the glyph
 }
 
 // --- the graph -------------------------------------------------------
