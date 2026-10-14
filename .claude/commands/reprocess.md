@@ -13,7 +13,9 @@ reproducible, and that only holds if old fragments can be brought forward.
    `content/<hex>.md` if given a hex.
 2. The source image is `content/keep-<hex>.<ext>` — the published copy is the
    only copy, which is fine, it is the same file.
-3. The filename carries no date, so the week **must** be passed explicitly.
+3. The filename carries no date, so the week **and** the day must be passed
+   explicitly: the week, plus `--date` from the fragment's own `date:` line.
+   The script will not infer a day from a week.
 
 ## Preconditions — assert before touching anything
 
@@ -29,13 +31,21 @@ Stop and report if any fail.
 ## Then
 
 ```
-./publish-keep.sh content/keep-<hex>.<ext> <week> --dry-run
+printf '\ny\n' | ./publish-keep.sh content/keep-<hex>.<ext> <week> --date <date> --dry-run
 ```
 
-Answer `y` to the overwrite prompt — rewriting is the intent here.
+The two answers are Enter at the tag review gate (accept what the model
+returned — editing is not the point here) and `y` to the overwrite prompt,
+since rewriting is the intent. The script keeps the original `published:` date
+on overwrite, and skips copying the image onto itself.
+
+Tags are **not deterministic**: the same skill on the same image has given
+different tag sets run to run. Versioning the skill pins the prompt, not the
+output. The transcript is the stable part; judge tags as one sample.
 
 **Note `--dry-run` still writes files.** It skips the commit, not the write. So
-the working tree is now modified and `git checkout content/<hex>.md` is the
+the working tree is now modified: `git checkout content/<hex>.md` and
+`git checkout transcripts/<hex>.txt` (or deleting it, if it is new) are the
 undo.
 
 Show me:

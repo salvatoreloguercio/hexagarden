@@ -275,7 +275,9 @@ extract_tags() {
   # ANTHROPIC_API_KEY is cleared for this call only: with it set, headless
   # runs can bill the API account instead of the subscription. Run from the
   # repo so the project's own .claude/skills/ is in scope wherever the script
-  # was invoked from.
+  # was invoked from. stdin is closed: claude -p appends piped stdin to the
+  # prompt, so without this it swallows the answers meant for the review gate
+  # and the overwrite prompt below.
   if ! out="$(
     cd "$REPO" && env -u ANTHROPIC_API_KEY claude -p "$SKILL $abs" \
       --model "$MODEL" \
@@ -283,7 +285,7 @@ extract_tags() {
       --permission-mode auto \
       --permission-prompts none \
       --output-format json \
-      --json-schema "$schema" 2>/dev/null
+      --json-schema "$schema" < /dev/null 2>/dev/null
   )"; then
     info "claude call failed."
     return 1
@@ -362,15 +364,23 @@ done
 
 mkdir -p "$DEST"
 
+PUBLISHED="$(date +%Y-%m-%d)"
+
 if [ -e "$MD_PATH" ]; then
   printf '%s already exists (%s). overwrite? [y/N] ' "${HEX}.md" "$WEEK" >&2
   IFS= read -r ans || ans=""
   case "$ans" in [yY]*) : ;; *) die "aborted." ;; esac
+  # Overwriting is reprocessing, not republishing: the fragment keeps the day
+  # it first went out.
+  prev="$(sed -n 's/^published: *//p' "$MD_PATH" | head -n 1)"
+  [ -n "$prev" ] && PUBLISHED="$prev"
 fi
 
-cp "$IMG" "$DEST/$IMG_NAME"
-
-PUBLISHED="$(date +%Y-%m-%d)"
+# Reprocessing passes the published image itself, and cp refuses to copy a
+# file onto itself — under set -e that aborts before anything is written.
+if [ ! "$IMG" -ef "$DEST/$IMG_NAME" ]; then
+  cp "$IMG" "$DEST/$IMG_NAME"
+fi
 
 {
   printf -- '---\n'
