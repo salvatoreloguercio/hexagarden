@@ -196,3 +196,18 @@ what makes improvisation legible"*.
 bipartite graph is already its incidence form — so "concepts as nodes,
 fragments as edges" is a rendering change, not a structural one, unless clique
 expansion is used.
+
+## Tag casing: proper nouns keep their capitals
+**Chose (2026-10-13):** lowercase except proper nouns — `allegory-of-prudence`,
+`Erato`, `Cosmè-Tura` — as the keep-tags skill already said. Accents kept.
+Briefly switched to all-lowercase the same day, then reverted: proper nouns
+read as names, and the capitals are part of how a tag looks on the page.
+**Enforced by:** `publish-keep.sh`, after the review gate. A new tag that
+matches a published one apart from case takes the published spelling (first
+spelling wins), after NFC normalisation, since macOS can encode `è` two ways
+that render identically. Covers LLM, typed and retyped lists.
+**Not caught:** near-misses that differ by more than case — `Eliot` vs
+`T-S-Eliot`, `Mary-Oliver` vs `Oliver`. Fixing those means vocabulary reuse,
+which was superseded by `domains`. Revisit only if it shows up in the graph.
+**Would change it:** if the model capitalises inconsistently enough that
+first-spelling-wins keeps locking in the wrong form.

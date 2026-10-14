@@ -56,8 +56,10 @@ connections *at all*. Keep both. Do not make tags more general to fix
 connectivity — that is what domains are for.
 
 **Casing matters.** `Poetry` and `poetry` are different nodes in the graph.
-Current tags are inconsistently cased (`Cosmè-Tura`, `Erato`, `Mary-Oliver`
-vs `allegory-of-prudence`). Normalise.
+The rule is lowercase except proper nouns (`allegory-of-prudence`, `Erato`,
+`Cosmè-Tura`). `publish-keep.sh` enforces consistency: a new tag matching a
+published one apart from case takes the published spelling, and accents are
+NFC-normalised. Domains are lowercase, by the skill's rule.
 
 ## Hard constraints
 

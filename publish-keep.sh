@@ -266,9 +266,11 @@ extract_tags() {
   info "reading $(basename "$abs") with claude ($MODEL)…"
 
   # ANTHROPIC_API_KEY is cleared for this call only: with it set, headless
-  # runs can bill the API account instead of the subscription.
+  # runs can bill the API account instead of the subscription. Run from the
+  # repo so the project's own .claude/skills/ is in scope wherever the script
+  # was invoked from.
   if ! out="$(
-    env -u ANTHROPIC_API_KEY claude -p "$SKILL $abs" \
+    cd "$REPO" && env -u ANTHROPIC_API_KEY claude -p "$SKILL $abs" \
       --model "$MODEL" \
       --allowedTools "Read" \
       --permission-mode auto \
@@ -325,6 +327,51 @@ if [ -n "$TAGS" ]; then
     "-") TAGS="" ;;
     *)   TAGS="$REPLY_TAGS" ;;
   esac
+fi
+
+# The rule is lowercase except proper nouns (`allegory-of-prudence`, but
+# `Eliot`), and casing splits graph nodes: `Eliot` and `eliot` are two tags that can
+# never meet. So a tag that matches an already-published one apart from case
+# takes the published spelling — first spelling wins. Accents stay, but are
+# NFC-normalised first: macOS can hand over `è` as one code point or as `e`
+# plus a combining grave, and those are two nodes that look identical. Runs
+# after the review gate so typed lists are covered too. If python3 balks, warn
+# and publish as typed.
+normalise_labels() {
+  python3 - "$REPO/content" <<'PY'
+import sys, os, glob, unicodedata
+nfc = lambda s: unicodedata.normalize("NFC", s)
+seen = {}
+for p in sorted(glob.glob(os.path.join(sys.argv[1], "*.md"))):
+    lines = open(p, encoding="utf-8").read().split("\n")
+    if not lines or lines[0] != "---":
+        continue
+    in_tags = False
+    for l in lines[1:]:
+        if l == "---":
+            break
+        if l.startswith("tags:"):
+            in_tags = True
+        elif in_tags and l.startswith("  - "):
+            t = nfc(l[4:].strip())
+            seen.setdefault(t.casefold(), t)
+        else:
+            in_tags = False
+out = []
+for t in nfc(os.environ["NEW_TAGS"]).split():
+    s = seen.get(t.casefold(), t)
+    if s != t:
+        print(f"  {t} -> {s} (already published that way)", file=sys.stderr)
+    out.append(s)
+print(" ".join(out), end="")
+PY
+}
+if [ -n "$TAGS" ]; then
+  if n="$(NEW_TAGS="$TAGS" PYTHONIOENCODING=utf-8 normalise_labels)"; then
+    TAGS="$n"
+  else
+    info "could not normalise tags; publishing them as typed."
+  fi
 fi
 
 # ---------------------------------------------------------------- write
