@@ -164,11 +164,15 @@ is large enough that prompt drift would be invisible.
 ## Frontispiece: static now, mosaic later
 **Chose:** a static full-bleed illumination as the landing page now. **Not**
 the latest fragment.
-**Status: NOT IMPLEMENTED.** `content/index.md` is currently a duplicate of the
-newest fragment and `publish-keep.sh` rewrites it on every publish. So the
-newest fragment exists at both `/` and `/<hex>`, appears twice in the graph,
-and "latest" is the organising principle at the entry point. Decide before the
-duplication compounds.
+**Status:** implemented 2026-10-13, reconfirmed by Salvatore the same day.
+Commit `0c63ffd` (2026-09-21, never pushed) had made `/` a copy of the newest
+fragment, rewritten by `publish-keep.sh` on every publish. Only that part was
+reverted: `content/index.md` is back to the Lindisfarne gif that was live all
+along, and the script no longer writes or stages it. About and the banner
+changes from the same commit stand.
+**Open, not blocking:** which illumination, and full-bleed or not. The current
+page is a 300×284 gif plus "Welcome!", which `0c63ffd` rightly called a
+welcome mat. Candidate: `quartz/static/banner-full.webp`, the full Chi-Rho.
 **Why:** "latest" reintroduces chronology and currency at the exact moment a
 visitor forms their model of the site, and the project rejects recency
 everywhere else. It also forced the publish script to rewrite `index.md`,

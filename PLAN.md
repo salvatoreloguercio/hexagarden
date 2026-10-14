@@ -19,7 +19,8 @@ Statuses below were verified against the repo on 2026-10-13.
 | Graph config: `showTags`, `depth: 2`, `opacityScale: 4` | ✅ done |
 | Skill-missing guard in `publish-keep.sh` | ✅ done |
 | `domains` layer alongside `tags` | ✅ done |
-| Landing page + About page | ✅ done (but see M1.1) |
+| About page | ✅ done |
+| Landing page is static, not the latest fragment | ✅ done (choice of image open — M1.1) |
 | Transcript capture → `transcripts/` | ⬜ not started |
 | Normalise tag casing; fix `Fprotein-folding` | ⬜ not started |
 | Favicon + og-image (still the Quartz logo in link previews) | ⬜ not started |
@@ -28,20 +29,21 @@ Statuses below were verified against the repo on 2026-10-13.
 | Colophon: rewrite, then re-link in the footer | ⬜ not started |
 | Clicking a fragment → `static/random.html` | ⬜ not started |
 
-### M1.1 — The landing page is UNRESOLVED
+### M1.1 — The landing page: decided, static
 
-`content/index.md` is currently a duplicate of the newest fragment, and
-`publish-keep.sh` rewrites it on every publish (`git add … content/index.md`).
+Reconfirmed 2026-10-13: `/` is **not** the latest fragment. Commit `0c63ffd`
+had made it one (a duplicate rewritten by `publish-keep.sh` on every publish);
+that part was reverted before it was ever pushed. `content/index.md` is back to
+the Lindisfarne gif that was already live, and the publish script no longer
+touches it.
 
-That means the newest fragment exists twice — at `/` and at `/<hex>` — and
-appears twice in the graph. It also makes "latest" the organising principle at
-the entry point, which the project rejects everywhere else.
-
-See `NOTES/decisions.md`. Decide before publishing many more; the duplication
-compounds.
+Still open, and **not** blocking publishing: which illumination, and whether
+it goes full-bleed. The current page is a 300×284 gif with a "Welcome!" under
+it; `quartz/static/banner-full.webp` (the full Chi-Rho, 1448×655) is the
+obvious candidate. See `NOTES/decisions.md`.
 
 **M1 done when:** publishing is one command, link previews aren't Quartz's
-logo, and the landing page question is settled.
+logo, and the frontispiece image is chosen.
 
 ## M2 — Publish
 

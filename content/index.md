@@ -1,11 +1,15 @@
 ---
-title: "29c26"
-date: 2019-05-24
-week: 2019-W21
-published: 2026-09-16
-draft: false
+title: Main
 ---
 
-<p class="fragment-meta">published 2026-09-16</p>
+<img src="./lindisfarne1.gif" width="300" height="284">
 
-![[keep-29c26.png]]
+```poetry
+Welcome!
+```
+
+
+
+
+
+
