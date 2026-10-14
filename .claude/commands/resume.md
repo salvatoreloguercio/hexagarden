@@ -2,11 +2,15 @@ Report where this project stands. Then stop and wait — do not start work.
 
 Read, in this order:
 
-1. The last two entries of `NOTES/session-log.md`
-2. Any entry in `NOTES/decisions.md` marked `UNRESOLVED`
-3. The current milestone in `PLAN.md` and which of its units are still pending
-4. `git log --oneline -10` and `git status`
-5. `ls content/*.md | wc -l` and the date of the most recent fragment commit
+1. **`NOTES/directives.md` — any directive still `OPEN` or `BLOCKED`.** This is
+   the channel from the desktop app and takes priority over everything below.
+2. The last two entries of `NOTES/session-log.md`
+3. Any entry in `NOTES/decisions.md` marked `UNRESOLVED`
+4. The current milestone in `PLAN.md` and which of its units are still pending
+5. `git log --oneline -10` and `git status`
+6. `ls content/*.md | wc -l`, and the **`published:` date in the newest
+   fragment's frontmatter** — not the git timestamp, which changes whenever a
+   tag is fixed and will understate the gap
 
 Then report, briefly:
 

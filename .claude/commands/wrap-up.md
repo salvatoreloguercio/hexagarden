@@ -12,7 +12,12 @@ Close out this session by writing state into the repo.
 
    Write it for a stranger. In three weeks that is who will read it.
 
-2. **Capture any new decisions** in `NOTES/decisions.md` — but only ones that
+2. **Close out any directives you executed** in `NOTES/directives.md` — record
+   the outcome under the directive's own heading and mark it `DONE` or
+   `BLOCKED`, with what blocked it. Do not delete completed directives; the
+   outcomes are the record of what the pipeline actually did.
+
+3. **Capture any new decisions** in `NOTES/decisions.md` — but only ones that
    would otherwise be re-litigated. Each needs the choice, the reason, and
    **what would change it**. Routine implementation choices do not belong here.
 
@@ -20,10 +25,10 @@ Close out this session by writing state into the repo.
    `**Status:** UNRESOLVED — do not build on this` rather than leaving it in
    your head.
 
-3. **Update `PLAN.md`** only if a milestone's units changed state. Do not
+4. **Update `PLAN.md`** only if a milestone's units changed state. Do not
    rewrite the plan.
 
-4. **Do not commit on my behalf.** Show me `git status` and what you have
+5. **Do not commit on my behalf.** Show me `git status` and what you have
    written, and let me commit.
 
 Then report the project's state in two sentences. Include days since the last

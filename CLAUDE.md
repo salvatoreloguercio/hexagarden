@@ -139,13 +139,33 @@ into chats that then have to be mined. If you find yourself composing a long
 prompt to paste between tools, write it to `NOTES/` instead — that is the
 failure this structure exists to prevent.
 
+### Who writes what
+
+Two writers in one repo is how files get clobbered and work gets done twice.
+Ownership is by path, not by judgment:
+
+| Path | Written by |
+|---|---|
+| `NOTES/**`, `PLAN.md`, `CLAUDE.md` | the desktop app |
+| everything else — `publish-keep.sh`, `quartz/`, `content/`, `.claude/skills/`, `.claude/commands/` | Claude Code |
+| **all git operations** — add, commit, push, stash, lock files | Claude Code, always |
+
+The desktop app reads the whole repo and writes only the directive layer. It
+does not edit code, skills, commands or content, even when the change is one
+line and it can see exactly what to type.
+
+When it wants code changed, it appends a directive to `NOTES/directives.md`
+and stops. Claude Code executes, then records the outcome there. That file is
+the channel between the two surfaces.
+
+**Why this is strict:** the desktop app has additive-only filesystem access —
+it can create and edit files but **cannot delete them**. So git cannot run
+from that side at all, and a stale `.git/index.lock` left by an attempted
+`git status` has to be removed by hand. A surface that can half-do an
+operation is worse than one that cannot touch it.
+
 ### If the desktop app writes a shell block, a slash command is missing
 
-The point of this setup is that operations are one word here, not a sequence
-of commands typed somewhere else. A pasted block of `cd && ./script && git …`
-means the operation has no command yet. Write one instead of running it.
-
-The desktop app has additive-only access to this repo: it can create and edit
-files but **cannot delete them**, so git cannot run from that side at all — a
-stale `.git/index.lock` left by an attempted `git status` has to be removed by
-hand. Anything touching git belongs in Claude Code.
+Operations should be one word in Claude Code, not a sequence typed somewhere
+else. A pasted block of `cd && ./script && git …` means the operation has no
+command yet. The fix is to add the command, not to run the block.
