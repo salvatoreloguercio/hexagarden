@@ -90,12 +90,19 @@ label lookup  ./publish-keep.sh --label 2019-W21   → 29c26
 requires      jq, python3, claude
 ```
 
-**The tagging skill lives outside this repo**, at
-`~/.claude/skills/keep-tags/SKILL.md`. `publish-keep.sh` guards for it and
-fails loudly if absent — without the guard, `claude` treats `/keep-tags` as
-ordinary prose and invents tags describing its own confusion. Consequence: the
-prompt is **not version-controlled with the project**. Changing it changes
-every future fragment with no diff in this repo.
+**The tagging skill is vendored** at `.claude/skills/keep-tags/SKILL.md`, so
+the prompt is versioned alongside the fragments it produced. `extract_tags()`
+runs `cd "$REPO"` before calling `claude` so the project skill is in scope
+wherever the script was invoked from.
+
+`publish-keep.sh` still guards for it with `skill_installed()` and fails loudly
+if absent — without that, `claude` treats `/keep-tags` as ordinary prose and,
+because the call forces a schema, fills it with words describing its own
+confusion. Silent, plausible garbage.
+
+**Editing the skill changes every future fragment.** It is a diff in this repo
+now, which is the point — but a diff nobody reads is no safer than none, so say
+in the commit message what behaviour changed.
 
 ## Modified from upstream Quartz
 
@@ -125,7 +132,20 @@ quartz/                     forked Quartz — see above
 
 Start with `/resume`. End with `/wrap-up`. Both read and write `NOTES/`.
 
+Commands: `/publish <image>`, `/reprocess <hex|week>`.
+
 The desktop app has access to this repo and should **write into `NOTES/`**, not
 into chats that then have to be mined. If you find yourself composing a long
 prompt to paste between tools, write it to `NOTES/` instead — that is the
 failure this structure exists to prevent.
+
+### If the desktop app writes a shell block, a slash command is missing
+
+The point of this setup is that operations are one word here, not a sequence
+of commands typed somewhere else. A pasted block of `cd && ./script && git …`
+means the operation has no command yet. Write one instead of running it.
+
+The desktop app has additive-only access to this repo: it can create and edit
+files but **cannot delete them**, so git cannot run from that side at all — a
+stale `.git/index.lock` left by an attempted `git status` has to be removed by
+hand. Anything touching git belongs in Claude Code.

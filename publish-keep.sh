@@ -252,6 +252,7 @@ fi
 
 TAGS=""
 DOMAINS=""
+TRANSCRIPT=""
 
 extract_tags() {
   command -v claude >/dev/null 2>&1 || die "claude not found on PATH. use --manual"
@@ -261,7 +262,13 @@ extract_tags() {
   abs="$(cd "$(dirname "$IMG")" && pwd)/$(basename "$IMG")"
   # domains are accumulated open-endedly for now: no enum, because the point
   # is to find out which coarse labels actually recur before fixing a set.
-  schema='{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"}},"domains":{"type":"array","items":{"type":"string"}}},"required":["tags","domains"]}'
+  #
+  # transcript: the model reads every word on the fragment anyway, and without
+  # this all but a handful are thrown away. Kept so embeddings, re-tagging and
+  # whatever graph method wins later can be derived without re-reading images.
+  # It is also the only check that the image reached the model at all — six
+  # plausible tags can be hallucinated, a verbatim transcript cannot.
+  schema='{"type":"object","properties":{"tags":{"type":"array","items":{"type":"string"}},"domains":{"type":"array","items":{"type":"string"}},"transcript":{"type":"string"}},"required":["tags","domains","transcript"]}'
 
   info "reading $(basename "$abs") with claude ($MODEL)…"
 
@@ -290,6 +297,10 @@ extract_tags() {
   # everything to everything. They ride along in the frontmatter instead.
   DOMAINS="$(printf '%s' "$out" | jq -r '.structured_output.domains[]?' 2>/dev/null | tr '\n' ' ')"
   DOMAINS="${DOMAINS% }"
+
+  # Unlike tags and domains this is never normalised, trimmed or reviewed: it
+  # is meant to be exactly what the model read.
+  TRANSCRIPT="$(printf '%s' "$out" | jq -r '.structured_output.transcript // empty' 2>/dev/null)"
 
   local cost
   cost="$(printf '%s' "$out" | jq -r '.total_cost_usd // empty' 2>/dev/null || true)"
@@ -396,6 +407,18 @@ printf '\n\033[2m--- %s ---\033[0m\n' "$FRAGMENT_SUBDIR/${HEX}.md" >&2
 cat "$MD_PATH" >&2
 printf '\033[2m---\033[0m\n\n' >&2
 
+# Outside content/, so Quartz never sees it: not published, not in RSS, not in
+# og:description. Present in git for embeddings and re-tagging. A missing
+# transcript is recoverable later; a failed publish is friction, so an empty
+# one only warns.
+if [ -n "$TRANSCRIPT" ]; then
+  mkdir -p "$REPO/transcripts"
+  printf '%s\n' "$TRANSCRIPT" > "$REPO/transcripts/${HEX}.txt"
+  info "transcript: $(printf '%s' "$TRANSCRIPT" | wc -w | tr -d ' ') words -> transcripts/${HEX}.txt"
+elif [ "$NOTAGS" -eq 0 ] && [ "$MANUAL" -eq 0 ]; then
+  info "no transcript returned — publishing anyway, but the vision step may have failed."
+fi
+
 # ---------------------------------------------------------------- commit
 
 if [ "$DRYRUN" -eq 1 ]; then
@@ -407,6 +430,10 @@ fi
 
 cd "$REPO"
 git add "$FRAGMENT_SUBDIR"
+# Only if it exists: under set -e a missing pathspec would abort the publish
+# after the fragment is written (first --manual / --no-tags run, or a model
+# that returned no transcript).
+if [ -d transcripts ]; then git add transcripts; fi
 if git diff --cached --quiet; then
   info "nothing to commit."
   exit 0

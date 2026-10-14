@@ -60,3 +60,41 @@ at 1700px" is what a future session needs.
 2. Then normalise casing and fix `Fprotein-folding` while the corpus is one
    fragment and it costs nothing.
 3. Then settle the landing page.
+
+---
+
+## 2026-10-13 (later) — transcript capture
+
+**Done**
+- `publish-keep.sh`: `transcript` added to the `--json-schema` (now
+  `tags`/`domains`/`transcript`, all required); `TRANSCRIPT` parsed from
+  `.structured_output.transcript`; written to `transcripts/<hex>.txt` after the
+  markdown; `git add` extended to `transcripts`. `bash -n` clean.
+- Deliberately **not** normalised or passed through the review gate — the
+  point is exactly what the model read.
+- Empty transcript warns and publishes anyway, except under `--manual` /
+  `--no-tags` where no vision call happens.
+- `transcripts/` is not in `.gitignore`. Verified.
+
+**Open**
+- `~/.claude/skills/keep-tags/SKILL.md` still needs its `## Transcript`
+  section. **The script will fail hard until then** — `transcript` is in
+  `required`, so a model that doesn't know to produce one returns a schema
+  violation. This is the first change that depends on a file outside the repo,
+  which is the cost named in `decisions.md`.
+- Untested end to end. No fragment published through the new path yet.
+
+**Decided, not built: the graph method**
+Asked whether to build the embedding/hybrid graph now. No — `PLAN.md` blocks
+M3 on M2 and that holds. At one fragment the three methods cannot be compared;
+choosing now would be aesthetics dressed as evidence. Note the trap in the
+framing: the graph method *is* a structural question, but it is blocked on
+data, so pausing publishing for it is circular — publishing is what unblocks
+it. Transcript capture is the only part that is expensive to defer, because
+every fragment published without it needs reprocessing later.
+
+**Next**
+1. Add `## Transcript` to the skill.
+2. Backfill `29c26` through the new path. Read the transcript against the
+   screenshot by eye — first confirmation the Read tool delivers images at all.
+3. Then publish. Target ten fragments, mixed types, before touching M3.

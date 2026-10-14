@@ -21,7 +21,7 @@ Statuses below were verified against the repo on 2026-10-13.
 | `domains` layer alongside `tags` | ✅ done |
 | About page | ✅ done |
 | Landing page is static, not the latest fragment | ✅ done (choice of image open — M1.1) |
-| Transcript capture → `transcripts/` | ⬜ not started |
+| Transcript capture → `transcripts/` | 🟡 script + skill done; untested until `/reprocess 29c26` |
 | Tags NFC-normalised; `Fprotein-folding` fixed | ✅ done |
 | Favicon + og-image (still the Quartz logo in link previews) | ⬜ not started |
 | Remove Search — it indexes one line of body text | ⬜ not started |

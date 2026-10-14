@@ -148,7 +148,19 @@ separation would be the extra work.
 **Status:** details UNRESOLVED — revisit after sizable content exists. Do not
 build sections in the meantime.
 
-## The tagging skill lives outside the repo
+## The tagging skill is vendored into the repo
+**Chose (2026-10-13):** moved from `~/.claude/skills/` to
+`.claude/skills/keep-tags/SKILL.md`. `mv`, not `cp` — two copies would drift
+and there would be no way to tell which produced a given fragment.
+**Why:** the prompt is the single biggest determinant of what every fragment
+carries, and it was unversioned. Changing it silently changed all future
+output with no diff. `skill_installed()` already searched the repo path and
+`extract_tags()` already did `cd "$REPO"`, so the script was built for this.
+**Consequence:** editing the skill is now a reviewable diff. Say in the commit
+message what behaviour changed — a diff nobody reads is no safer than none.
+**Supersedes the entry below**, kept for the reasoning about the guard.
+
+## The tagging skill lives outside the repo *(superseded)*
 **Chose:** `~/.claude/skills/keep-tags/SKILL.md`, with a `skill_installed()`
 guard in `publish-keep.sh` that fails loudly when it is missing.
 **Why the guard:** without it, `claude` treats an unknown `/keep-tags` as
