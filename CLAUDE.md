@@ -55,11 +55,13 @@ Specific tags create *surprising* connections when they happen; domains create
 connections *at all*. Keep both. Do not make tags more general to fix
 connectivity — that is what domains are for.
 
-**Casing matters.** `Poetry` and `poetry` are different nodes in the graph.
-The rule is lowercase except proper nouns (`allegory-of-prudence`, `Erato`,
-`Cosmè-Tura`). `publish-keep.sh` enforces consistency: a new tag matching a
-published one apart from case takes the published spelling, and accents are
-NFC-normalised. Domains are lowercase, by the skill's rule.
+**Case does not matter; Unicode does.** Quartz slugifies every tag
+(`slugTag`, via `github-slugger`), which lowercases — so `Eliot` and `eliot`
+are one node, and the site only ever shows the lowercase slug. But a composed
+`è` and `e` plus a combining grave slug differently and become two nodes that
+look identical; `publish-keep.sh` NFC-normalises to prevent it. Frontmatter
+follows the skill's rule, lowercase except proper nouns (`Cosmè-Tura`,
+`allegory-of-prudence`), for the repo's readability only.
 
 ## Hard constraints
 

@@ -22,7 +22,7 @@ Statuses below were verified against the repo on 2026-10-13.
 | About page | ✅ done |
 | Landing page is static, not the latest fragment | ✅ done (choice of image open — M1.1) |
 | Transcript capture → `transcripts/` | ⬜ not started |
-| Tag casing enforced; `Fprotein-folding` fixed | ✅ done |
+| Tags NFC-normalised; `Fprotein-folding` fixed | ✅ done |
 | Favicon + og-image (still the Quartz logo in link previews) | ⬜ not started |
 | Remove Search — it indexes one line of body text | ⬜ not started |
 | Remove Backlinks — always empty, fragments never link | ⬜ not started |
@@ -97,7 +97,7 @@ Only meaningful once M4 exists.
 | **Drift** | No external deadline; five months already lost | `/resume` reports days since last publish, plainly |
 | **Elaboration over publishing** | The documented failure mode | Unresolved → `decisions.md`, publish anyway |
 | **Disconnected graph** | 1 fragment, 6 tags, 4 domains, nothing recurring yet | Domains are the recurring layer; check at M2 |
-| **Inconsistent casing** | `Poetry` ≠ `poetry` — silently splits graph nodes | Publish script snaps to published spelling; watch for near-misses it can't catch (`Eliot` vs `T-S-Eliot`) |
+| **Split tag nodes** | Case is folded by Quartz, but composed vs decomposed accents are not | Publish script NFC-normalises; near-misses (`Eliot` vs `T-S-Eliot`) are not caught |
 | **Prompt drift** | The skill is outside the repo and unversioned | Consider vendoring a copy into `.claude/skills/` |
 | **Quartz divergence** | 3+ modified files; v5 is 300+ commits ahead | Mark edits; decide on v5 at M3 |
 | **Silent vision failure** | Plausible tags can be hallucinated | Transcripts make it visible |

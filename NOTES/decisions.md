@@ -197,17 +197,25 @@ bipartite graph is already its incidence form — so "concepts as nodes,
 fragments as edges" is a rendering change, not a structural one, unless clique
 expansion is used.
 
-## Tag casing: proper nouns keep their capitals
-**Chose (2026-10-13):** lowercase except proper nouns — `allegory-of-prudence`,
-`Erato`, `Cosmè-Tura` — as the keep-tags skill already said. Accents kept.
-Briefly switched to all-lowercase the same day, then reverted: proper nouns
-read as names, and the capitals are part of how a tag looks on the page.
-**Enforced by:** `publish-keep.sh`, after the review gate. A new tag that
-matches a published one apart from case takes the published spelling (first
-spelling wins), after NFC normalisation, since macOS can encode `è` two ways
-that render identically. Covers LLM, typed and retyped lists.
+## Tag spelling: Quartz folds case, the script folds Unicode
+**Found (2026-10-13):** Quartz runs every tag through `slugTag` →
+`github-slugger`, which lowercases. `Eliot` and `eliot` were always one graph
+node, and the site only ever shows the slug (`#cosmè-tura`); fragment pages
+render no tag list. The earlier worry that `Poetry` ≠ `poetry` splits the
+graph was wrong.
+**What does split:** composed `è` (U+00E8) vs `e` + U+0300. Tested: the slugger
+keeps them apart (lengths 10 vs 11), giving two identical-looking nodes.
+**Chose:** `publish-keep.sh` NFC-normalises tags and domains after the review
+gate, so typed lists are covered. Frontmatter follows the skill's rule —
+lowercase except proper nouns, accents kept — purely for reading the repo.
+A same-day detour (forcing all-lowercase, then snapping new tags to the
+published spelling) was dropped once the slugger's behaviour was checked.
 **Not caught:** near-misses that differ by more than case — `Eliot` vs
-`T-S-Eliot`, `Mary-Oliver` vs `Oliver`. Fixing those means vocabulary reuse,
-which was superseded by `domains`. Revisit only if it shows up in the graph.
-**Would change it:** if the model capitalises inconsistently enough that
-first-spelling-wins keeps locking in the wrong form.
+`T-S-Eliot`. Revisit only if it shows up in the graph.
+
+## Showing tags with their capitals
+**Status:** UNRESOLVED — a preference; does not block publishing.
+The graph labels tag nodes `"#" + slug`, so `Cosmè-Tura` displays as
+`#cosmè-tura`. Showing the frontmatter spelling would mean editing
+`graph.inline.ts` to carry the original string alongside the slug.
+**Revisit:** with more fragments, by looking at the graph.

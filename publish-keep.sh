@@ -329,50 +329,23 @@ if [ -n "$TAGS" ]; then
   esac
 fi
 
-# The rule is lowercase except proper nouns (`allegory-of-prudence`, but
-# `Eliot`), and casing splits graph nodes: `Eliot` and `eliot` are two tags that can
-# never meet. So a tag that matches an already-published one apart from case
-# takes the published spelling — first spelling wins. Accents stay, but are
-# NFC-normalised first: macOS can hand over `è` as one code point or as `e`
-# plus a combining grave, and those are two nodes that look identical. Runs
-# after the review gate so typed lists are covered too. If python3 balks, warn
-# and publish as typed.
-normalise_labels() {
-  python3 - "$REPO/content" <<'PY'
-import sys, os, glob, unicodedata
-nfc = lambda s: unicodedata.normalize("NFC", s)
-seen = {}
-for p in sorted(glob.glob(os.path.join(sys.argv[1], "*.md"))):
-    lines = open(p, encoding="utf-8").read().split("\n")
-    if not lines or lines[0] != "---":
-        continue
-    in_tags = False
-    for l in lines[1:]:
-        if l == "---":
-            break
-        if l.startswith("tags:"):
-            in_tags = True
-        elif in_tags and l.startswith("  - "):
-            t = nfc(l[4:].strip())
-            seen.setdefault(t.casefold(), t)
-        else:
-            in_tags = False
-out = []
-for t in nfc(os.environ["NEW_TAGS"]).split():
-    s = seen.get(t.casefold(), t)
-    if s != t:
-        print(f"  {t} -> {s} (already published that way)", file=sys.stderr)
-    out.append(s)
-print(" ".join(out), end="")
-PY
+# Quartz lowercases tags itself (slugTag, via github-slugger), so case never
+# splits a graph node. Unicode does: macOS can hand over `è` as one code point
+# or as `e` plus a combining grave, the slugger keeps them apart, and the graph
+# shows two nodes that look identical. NFC makes them one. Runs after the
+# review gate so typed lists are covered too; if python3 balks, warn and
+# publish as typed.
+nfc() {
+  PYTHONIOENCODING=utf-8 python3 -c 'import sys, unicodedata
+print(unicodedata.normalize("NFC", sys.stdin.read()), end="")'
 }
-if [ -n "$TAGS" ]; then
-  if n="$(NEW_TAGS="$TAGS" PYTHONIOENCODING=utf-8 normalise_labels)"; then
-    TAGS="$n"
+for v in TAGS DOMAINS; do
+  if n="$(printf '%s' "${!v}" | nfc)"; then
+    printf -v "$v" '%s' "$n"
   else
-    info "could not normalise tags; publishing them as typed."
+    info "could not normalise $v; publishing them as typed."
   fi
-fi
+done
 
 # ---------------------------------------------------------------- write
 
