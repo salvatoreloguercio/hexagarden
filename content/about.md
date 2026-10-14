@@ -35,7 +35,7 @@ here.
 
 ---
 
-[The latest fragment](./) is the front door. [The colophon](./colophon)
-explains how the labels, the tagging and the apparatus actually work. The
+[The colophon](./colophon) explains how the labels, the tagging and the
+apparatus actually work. The
 [source](https://github.com/salvatoreloguercio/hexagarden) is all there is
 besides.
